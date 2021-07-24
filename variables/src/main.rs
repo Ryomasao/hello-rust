@@ -2,6 +2,7 @@ fn main() {
     func();
     condition();
     func_loop();
+    func_owner();
 }
 
 // 関数の戻り値がある場合は、型指定を行う
@@ -42,4 +43,17 @@ fn func_loop() {
     for item in (1..4).rev() {
         println!("{}", item);
     }
+}
+
+fn func_owner() {
+    let s1 = String::from("hello");
+    let s2 = func_move(s1);
+    println!("{}", s2);
+}
+
+fn func_move(s: String) -> String {
+    // 関数に渡した値にも所有権は移る。
+    // 参照と借用から
+    // https://doc.rust-jp.rs/book-ja/ch04-02-references-and-borrowing.html
+    s
 }
