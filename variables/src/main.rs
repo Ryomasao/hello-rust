@@ -46,9 +46,20 @@ fn func_loop() {
 }
 
 fn func_owner() {
-    let s1 = String::from("hello");
-    let s2 = func_move(s1);
-    println!("{}", s2);
+    let s1 = String::from("hello world");
+    let mut s2 = func_move(s1);
+    func_view(&mut s2);
+    let index = first_word(&s2);
+    //{
+    //    let r1 = &mut s1;
+    //    r1.push_str("add by r1");
+    //}
+
+    //let r2 = &mut s1;
+    //r2.push_str("add by r2");
+
+    println!("s={}", s2);
+    println!("index={}", index);
 }
 
 fn func_move(s: String) -> String {
@@ -56,4 +67,20 @@ fn func_move(s: String) -> String {
     // 参照と借用から
     // https://doc.rust-jp.rs/book-ja/ch04-02-references-and-borrowing.html
     s
+}
+
+fn func_view(s: &mut String) -> &mut String {
+    s.push_str("a");
+    s
+}
+
+fn first_word(s: &String) -> &str {
+    let bytes = s.as_bytes();
+
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[0..i];
+        }
+    }
+    &s[..]
 }
