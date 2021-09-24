@@ -24,10 +24,13 @@
 ### String について
 
 ```rs
-		// こっちの形は組み込みString?
+		// こっちの形は組み込みString
     let name = String::from("tarou");
-		// こっちは &str
+		// こっちは &str バイナリへの特定の位置を指すスライス
     let name = "tarou";
+    // &String::from("foo")[..] = "foo"
+    // &String::from("foo") = "foo" なのかがよくわからない。関数の引数が&strの場合、どっちもいける。
+    // 参照外し型強制キーワードをあとでみる
 ```
 
 これはライフタイム指定子が必要になる。あとで。
