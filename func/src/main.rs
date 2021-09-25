@@ -1,54 +1,42 @@
+use std::cmp::Eq;
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::thread;
 use std::time::Duration;
 
 fn main() {
     let simulated_user_specified_value = 10;
     let simulated_random_number = 7;
-
     generate_workout(simulated_user_specified_value, simulated_random_number);
-
-    simulated_expensive_calculation(2);
 }
 
-struct Cacher<T>
-where
-    T: Fn(u32) -> u32,
-{
-    calculation: T,
-    value: Option<u32>,
-    values: HashMap<u32, u32>,
+struct Cacher<F, K, V> {
+    calculation: F,
+    values: HashMap<K, V>,
 }
 
-impl<T> Cacher<T>
+impl<F, K, V> Cacher<F, K, V>
 where
-    T: Fn(u32) -> u32,
+    F: Fn(K) -> V,
+    K: Eq + Hash + Clone,
+    V: Clone,
 {
-    fn new(calculation: T) -> Cacher<T> {
+    fn new(calculation: F) -> Cacher<F, K, V> {
         Cacher {
             calculation,
-            value: None,
             values: HashMap::new(),
         }
     }
 
-    fn value(&mut self, arg: u32) -> u32 {
-        match self.values.get(&arg) {
+    fn value(&mut self, key: K) -> V {
+        match self.values.get(&key) {
             Some(v) => v.clone(),
             None => {
-                let v = (self.calculation)(arg);
-                self.values.insert(arg, v);
+                let v = (self.calculation)(key.clone());
+                self.values.insert(key, v.clone());
                 v
             }
         }
-        // match self.value {
-        //     Some(v) => v,
-        //     None => {
-        //         let v = (self.calculation)(arg);
-        //         self.value = Some(v);
-        //         v
-        //     }
-        // }
     }
 }
 
@@ -74,12 +62,6 @@ fn generate_workout(intensity: u32, random_number: u32) {
             });
         }
     }
-}
-
-fn simulated_expensive_calculation(intensity: u32) -> u32 {
-    println!("slowly...");
-    thread::sleep(Duration::from_secs(1));
-    intensity
 }
 
 #[cfg(test)]
