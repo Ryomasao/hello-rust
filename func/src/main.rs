@@ -19,7 +19,7 @@ impl<F, K, V> Cacher<F, K, V>
 where
     F: Fn(K) -> V,
     K: Eq + Hash + Clone,
-    V: Clone,
+    V: Clone + Copy,
 {
     fn new(calculation: F) -> Cacher<F, K, V> {
         Cacher {
@@ -27,6 +27,25 @@ where
             values: HashMap::new(),
         }
     }
+
+    // VではなくVの参照をかえすようにしたパターン、これはコンパイルが通らない
+    // おなじような質問。ただ回答の内容が理解できぬ。。。
+    // https://stackoverflow.com/questions/56181266/mutable-borrow-from-hashmap-and-lifetime-elision
+    //fn failed_value(&mut self, key: K) -> &V {
+    //    match self.values.get(&key) {
+    //        Some(v) => v,
+    //        None => {
+    //            let s = String::from("aaa");
+    //            let v = (self.calculation)(key.clone());
+    //            // ここに表示されるエラーMSGがなぞ
+    //            // &Vではなく &Stringとして考えると、エラーMSGの内容とは異なるけどなんだか危険な匂いがすることはわかる
+    //            // というのも、そのStringの所有者はここでいうクロージャになると思うんだけど、クロージャ終わった瞬間解放されちゃう気がする。
+    //            // HashMapのkeyに参照持たせるのってどうなんだろう。
+    //            self.values.insert(key, v.clone());
+    //            &v
+    //        }
+    //    }
+    //}
 
     fn value(&mut self, key: K) -> V {
         match self.values.get(&key) {
