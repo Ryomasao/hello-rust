@@ -44,14 +44,6 @@ https://doc.rust-jp.rs/book-ja/ch05-03-method-syntax.html
 
 > Rust には->演算子の代わりとなるようなものはありません; その代わり、Rust には、 自動参照および参照外しという機能があります。Rust においてメソッド呼び出しは、 この動作が行われる数少ない箇所なのです。
 
-```rs
-    let foo = "foo";
-    let bar = foo;
-    // これは問題なかった
-    // barに所有権がいくからfooは死んでるかと思った
-    let baz = foo;
-```
-
 iterator の iter と into_iter
 
 ```rs
@@ -65,16 +57,6 @@ fn shoes_im_my_size_u32<'a>(shoes: &'a Vec<u32>, shoe_size: u32) -> Vec<&'a u32>
 ```
 
 ### String について
-
-```rs
-		// こっちの形は組み込みString
-    let name = String::from("tarou");
-		// こっちは &str バイナリへの特定の位置を指すスライス
-    let name = "tarou";
-    // &String::from("foo")[..] = "foo"
-    // &String::from("foo") = "foo" なのかがよくわからない。関数の引数が&strの場合、どっちもいける。
-    // 参照外し型強制キーワードをあとでみる
-```
 
 これはライフタイム指定子が必要になる。あとで。
 
@@ -123,3 +105,103 @@ https://doc.rust-jp.rs/book-ja/ch04-01-what-is-ownership.html
 関数に所有権を渡すべきか、渡さないべきかが問題だ。
 
 - println!って所有権奪わないんだ
+
+### Q and A
+
+#### Q1
+
+```rs
+    let foo = "foo";
+    let bar = foo;
+    // これは問題なかった
+    // barに所有権がいくからfooは死んでるかと思った
+    let baz = bar;
+```
+
+#### A1
+
+文字列`foo`は文字列スライスで、ヒープではなく静的領域に格納される。
+なので、プリミティブな値と同じ挙動って考えて大丈夫そう。
+
+```rs
+    let foo = "foo";
+    // 文字列fooへのポインタを保持する変数
+    let bar = foo;
+    // 文字列fooへのポインタを保持する変数
+    let baz = bar;
+```
+
+&str は Copy トレイトを実装しているからっていう説明もできる。
+正確には、&str ではなく、&が Copy トレイトを実装している。
+
+https://doc.rust-lang.org/std/primitive.reference.html#trait-implementations-1
+
+そして我々は、`str`の実装はわからなくって、`&str`としてのみ触れることができる。
+
+https://stackoverflow.com/questions/59994765/how-can-str-be-copied-if-it-doesnt-implement-the-copy-trait
+
+#### Q2
+
+`&String::from("foo") = "foo"` なのかがよくわからない。
+関数の引数が&str の場合、どっちもいける。
+
+#### A2
+
+違う。
+
+> 関数の引数が&str の場合、どっちもいける。
+
+これは、Defer の機能。あとでみる。
+
+https://qiita.com/nirasan/items/e9c621240a7aae914cb8#deref-%E3%81%AB%E3%82%88%E3%82%8B%E8%87%AA%E5%8B%95%E5%9E%8B%E5%A4%89%E6%8F%9B
+
+`String::from("foo")`  
+→ ヒープ領域に格納されている文字列 foo へのアドレスを持つ
+
+`"foo"`  
+→ 静的領域に格納されている文字列 foo へのアドレスを持つ
+
+#### Q3
+
+参照パターンでも、所有権が移動するのはなんで。
+
+```rs
+	let mut foo = 1;
+    let bar = &mut foo;
+    let baz = bar;
+    // barはmoveされちゃっててNG
+	println!("bar:{}", bar)
+	println!("baz:{}", baz);
+```
+
+### A3
+
+`&`は Copy トレイトを実装してるけど、`&T`は Copy トレイトを実装してないんだって。
+
+https://doc.rust-lang.org/std/primitive.reference.html#trait-implementations-1
+
+> &mut T references get all of the above except Copy and Clone (to prevent creating multiple simultaneous mutable borrows), plus the following, regardless of the type of its referent:
+
+move しないと、`mut`の参照が複数できちゃうから納得。
+
+### Q4
+
+`s`の実体はポインタなんだけど、前者が OK で後者が NG な理由が理解しにくい。
+
+```rs
+fn func_ok()->String {
+	let s = String::from("hello");
+	s
+}
+
+fn func_ng<'a>()->&'a String {
+	let s = String::from("hello");
+	&s
+}
+```
+
+### A5
+
+`s`の実体はポインタって思うからだめなのかな。  
+`s`の実体は String 型。ポインタじゃない。String 型の内部実装として、文字列へのアドレスはもってるけど、ポインタそのものじゃない的な？  
+もしくは、`&s`は所有権を move しないから、後者で`&s`返しても s の所有者がいなくなっちゃうって考える？
