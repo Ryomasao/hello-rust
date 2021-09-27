@@ -1,5 +1,8 @@
 # Hello Rust
 
+チュートリアルから派生した疑問を解消するのが難しい。
+ある程度学習したら目的ベースでつまんでくほうがよさげ。
+
 ## Basic
 
 1. 新しくプロジェクトを作成する
@@ -47,6 +50,18 @@ https://doc.rust-jp.rs/book-ja/ch05-03-method-syntax.html
     // これは問題なかった
     // barに所有権がいくからfooは死んでるかと思った
     let baz = foo;
+```
+
+iterator の iter と into_iter
+
+```rs
+fn shoes_im_my_size_u32<'a>(shoes: &'a Vec<u32>, shoe_size: u32) -> Vec<&'a u32> {
+    // こんな書き方であってるのかしら
+    // iter()の場合所有権を奪わない
+    // これを使う場面はもとのベクタを生かしたまま、その要素を参照するベクタを新しくつくるときかしら
+    // into_iterでもsは参照を返す。shoesが参照だからかしら。うーむ。
+    shoes.iter().filter(|s| s == &&shoe_size).collection()
+}
 ```
 
 ### String について

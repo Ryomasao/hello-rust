@@ -94,4 +94,14 @@ mod tests {
         assert_eq!(v1, 1);
         assert_eq!(v2, 2);
     }
+
+    #[test]
+    fn playground() {
+        let v1 = vec![1, 2, 3];
+        //let mut v1_iter = v1.iter();
+        //let v = v1_iter.next();
+
+        let v1: Vec<_> = v1.iter().map(|x| x + 1).collect();
+        assert_eq!(2, v1[0]);
+    }
 }
